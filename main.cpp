@@ -10,7 +10,68 @@
 #include <windows.h>
 
 
-const unsigned int FPS = 60;
+struct ColorFlow {
+
+    int rModifier = 1;
+    int gModifier = 1;
+    int bModifier = 1;
+
+    int r;
+    int g;
+    int b;
+
+    explicit ColorFlow(COLORREF colorRef) {
+        r = GetRValue(colorRef);
+        g = GetGValue(colorRef);
+        b = GetBValue(colorRef);
+    }
+
+    ColorFlow(int r, int g, int b) {
+        this->r = r;
+        this->g = g;
+        this->b = b;
+    }
+
+    void createNextColor() {
+        r += rModifier;
+        if (r >= 255) {
+            r = 255;
+            rModifier = -1;
+        } else if (r <= 0) {
+            r = 0;
+            rModifier = 1;
+        }
+
+        g += gModifier;
+        if (g >= 255) {
+            g = 255;
+            gModifier = -1;
+        } else if (g <= 0) {
+            g = 0;
+            gModifier = 1;
+        }
+
+        b += bModifier;
+        if (b >= 255) {
+            b = 255;
+            bModifier = -1;
+        } else if (b <= 0) {
+            b = 0;
+            bModifier = 1;
+        }
+    }
+
+    COLORREF getCurrentColor() {
+        return RGB(r, g, b);
+    }
+
+    COLORREF getNextColor() {
+        createNextColor();
+        return RGB(r, g, b);
+    }
+};
+
+const unsigned int FPS = 120;
 const unsigned int MOVEMENT_TIMER_ID = 1;
 const unsigned int MOVEMENT_UPDATE_DELAY = 1000/FPS;
 const POINTFLOAT MOVEMENT_PER_FRAME = POINTFLOAT {200.0f/FPS, 100.0f/FPS};
@@ -20,8 +81,8 @@ const SIZE FIRST_WINDOW_SIZE = SIZE {400, 300};
 const SIZE MOVING_RECT_SIZE = SIZE {50, 50};
 
 const COLORREF BACKGROUND_COLOR = RGB(26, 26, 26);
-const COLORREF MOVING_RECT_COLOR = RGB(241, 196, 15);
 
+static ColorFlow movingRectColorFlow = ColorFlow(RGB(241, 196, 15));
 static POINTFLOAT movingRectPosition = POINTFLOAT {25.0f, 25.0f};
 static POINTFLOAT movementDirectionModifier = POINTFLOAT {1.0f, 1.0f};
 
@@ -96,7 +157,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
             SelectObject(hdc, GetStockObject(DC_PEN));
             SelectObject(hdc, GetStockObject(DC_BRUSH));
 
-            COLORREF rectColor = MOVING_RECT_COLOR;
+            COLORREF rectColor = movingRectColorFlow.getCurrentColor();
             SetDCPenColor(hdc, rectColor);
             SetDCBrushColor(hdc, rectColor);
 
@@ -120,6 +181,8 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
         case WM_TIMER: {
             movingRectPosition.x = movingRectPosition.x + MOVEMENT_PER_FRAME.x * movementDirectionModifier.x;
             movingRectPosition.y = movingRectPosition.y + MOVEMENT_PER_FRAME.y * movementDirectionModifier.y;
+
+            movingRectColorFlow.createNextColor();
 
             RECT clientRect;
             GetClientRect(hwnd, &clientRect);
