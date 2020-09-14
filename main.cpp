@@ -21,9 +21,11 @@ const SIZE MOVING_RECT_SIZE = SIZE {50, 50};
 
 const COLORREF BACKGROUND_COLOR = RGB(26, 26, 26);
 
-static ColorFlow movingRectColorFlow = ColorFlow(RGB(241, 196, 15));
+static COLORREF movingRectColor = RGB(241, 196, 15);
 static POINTFLOAT movingRectPosition = POINTFLOAT {25.0f, 25.0f};
 static POINTFLOAT movementDirectionModifier = POINTFLOAT {1.0f, 1.0f};
+
+static ColorFlow movingRectColorFlow = ColorFlow(movingRectColor);
 
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -96,7 +98,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
             SelectObject(hdc, GetStockObject(DC_PEN));
             SelectObject(hdc, GetStockObject(DC_BRUSH));
 
-            COLORREF rectColor = movingRectColorFlow.getCurrentColor();
+            COLORREF rectColor = movingRectColor;
             SetDCPenColor(hdc, rectColor);
             SetDCBrushColor(hdc, rectColor);
 
@@ -121,7 +123,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
             movingRectPosition.x = movingRectPosition.x + MOVEMENT_PER_FRAME.x * movementDirectionModifier.x;
             movingRectPosition.y = movingRectPosition.y + MOVEMENT_PER_FRAME.y * movementDirectionModifier.y;
 
-            movingRectColorFlow.createNextColor();
+            movingRectColor = movingRectColorFlow.getNextColor();
 
             RECT clientRect;
             GetClientRect(hwnd, &clientRect);

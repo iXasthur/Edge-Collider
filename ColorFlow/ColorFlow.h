@@ -8,23 +8,12 @@
 #include <windows.h>
 
 class ColorFlow {
-public:
-
+private:
     int rModifier = 1;
     int gModifier = 1;
     int bModifier = 1;
 
-    int r;
-    int g;
-    int b;
-
-    explicit ColorFlow(COLORREF colorRef) {
-        r = GetRValue(colorRef);
-        g = GetGValue(colorRef);
-        b = GetBValue(colorRef);
-    }
-
-    void createNextColor() {
+    void generateNextColor() {
         r += rModifier;
         if (r >= 255) {
             r = 255;
@@ -53,12 +42,23 @@ public:
         }
     }
 
+public:
+    int r;
+    int g;
+    int b;
+
+    explicit ColorFlow(COLORREF colorRef) {
+        r = GetRValue(colorRef);
+        g = GetGValue(colorRef);
+        b = GetBValue(colorRef);
+    }
+
     COLORREF getCurrentColor() {
         return RGB(r, g, b);
     }
 
     COLORREF getNextColor() {
-        createNextColor();
+        generateNextColor();
         return RGB(r, g, b);
     }
 };
