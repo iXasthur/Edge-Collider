@@ -6,7 +6,6 @@
 #endif
 
 #include <iostream>
-#include <cmath>
 #include <windows.h>
 #include "ColorFlow/ColorFlow.h"
 #include "MovingObjects/RainbowRect.h"
@@ -23,7 +22,7 @@ const SIZE MOVING_RECT_SIZE = SIZE {50, 50};
 
 const COLORREF BACKGROUND_COLOR = RGB(26, 26, 26);
 
-static RainbowRect rainbowRect = RainbowRect(ColorFlow(RGB(241, 196, 15)), POINTFLOAT{25.0f, 25.0f});
+RainbowRect rainbowRect = RainbowRect(ColorFlow(RGB(241, 196, 15)), POINTFLOAT{25.0f, 25.0f});
 
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -80,21 +79,24 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR pCmdLine, int nCmdShow
     return 0;
 }
 
-void drawRect(HDC hdc) {
-    SelectObject(hdc, GetStockObject(DC_PEN));
-    SelectObject(hdc, GetStockObject(DC_BRUSH));
+void drawRainbowRect(HDC hdc) {
+    COLORREF initialDCPenColor = GetDCPenColor(hdc);
+    COLORREF initialDCBrushColor = GetDCBrushColor(hdc);
 
     COLORREF rectColor = rainbowRect.colorFlow.getCurrentColor();
     SetDCPenColor(hdc, rectColor);
     SetDCBrushColor(hdc, rectColor);
 
     RECT movingRect;
-    movingRect.left = 0 + rainbowRect.position.x;
-    movingRect.top = 0 + rainbowRect.position.y;
+    movingRect.left = rainbowRect.position.x;
+    movingRect.top = rainbowRect.position.y;
     movingRect.right = MOVING_RECT_SIZE.cx + rainbowRect.position.x;
     movingRect.bottom = MOVING_RECT_SIZE.cy + rainbowRect.position.y;
 
     Rectangle(hdc, movingRect.left, movingRect.top, movingRect.right, movingRect.bottom);
+
+    SetDCPenColor(hdc, initialDCPenColor);
+    SetDCBrushColor(hdc, initialDCBrushColor);
 }
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
@@ -107,10 +109,13 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hwnd, &ps);
 
+            SelectObject(hdc, GetStockObject(DC_PEN));
+            SelectObject(hdc, GetStockObject(DC_BRUSH));
+
             HBRUSH backgroundBrush = CreateSolidBrush(BACKGROUND_COLOR);
             FillRect(hdc, &ps.rcPaint, backgroundBrush);
 
-            drawRect(hdc);
+            drawRainbowRect(hdc);
 
             EndPaint(hwnd, &ps);
             break;

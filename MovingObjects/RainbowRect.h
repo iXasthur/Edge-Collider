@@ -5,7 +5,6 @@
 #ifndef EDGE_COLLIDER_RAINBOWRECT_H
 #define EDGE_COLLIDER_RAINBOWRECT_H
 
-#include <windows.h>
 #include "../ColorFlow/ColorFlow.h"
 
 class RainbowRect {
