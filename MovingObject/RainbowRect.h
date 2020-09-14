@@ -14,6 +14,8 @@ public:
 
     ColorFlow colorFlow = ColorFlow();
 
+    bool isHidden = false;
+
     RainbowRect() = default;
 
     RainbowRect(ColorFlow colorFlow, POINTFLOAT position) noexcept {
