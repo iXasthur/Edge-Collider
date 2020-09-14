@@ -8,7 +8,7 @@
 #include <iostream>
 #include <windows.h>
 #include "ColorFlow/ColorFlow.h"
-#include "MovingObjects/RainbowRect.h"
+#include "MovingObject/RainbowRect.h"
 
 
 const unsigned int FPS = 120;
@@ -99,12 +99,45 @@ void drawRainbowRect(HDC hdc) {
     SetDCBrushColor(hdc, initialDCBrushColor);
 }
 
+void updateRainbowRect(HWND hwnd) {
+    rainbowRect.position.x = rainbowRect.position.x + MOVEMENT_PER_FRAME.x * rainbowRect.directionModifier.x;
+    rainbowRect.position.y = rainbowRect.position.y + MOVEMENT_PER_FRAME.y * rainbowRect.directionModifier.y;
+
+    rainbowRect.colorFlow.getNextColor(); // Generates new color
+
+    RECT clientRect;
+    GetClientRect(hwnd, &clientRect);
+    if (rainbowRect.position.x + MOVING_RECT_SIZE.cx > clientRect.right) {
+        rainbowRect.position.x = clientRect.right - MOVING_RECT_SIZE.cx;
+        if (rainbowRect.directionModifier.x > 0.0f) {
+            rainbowRect.directionModifier.x = -1.0f;
+        }
+    } else if (rainbowRect.position.x < clientRect.left) {
+        rainbowRect.position.x = clientRect.left;
+        if (rainbowRect.directionModifier.x < 0.0f) {
+            rainbowRect.directionModifier.x = 1.0f;
+        }
+    }
+    if (rainbowRect.position.y + MOVING_RECT_SIZE.cy > clientRect.bottom) {
+        rainbowRect.position.y = clientRect.bottom - MOVING_RECT_SIZE.cy;
+        if (rainbowRect.directionModifier.y > 0.0f) {
+            rainbowRect.directionModifier.y = -1.0f;
+        }
+    } else if (rainbowRect.position.y < clientRect.top) {
+        rainbowRect.position.y = clientRect.top;
+        if (rainbowRect.directionModifier.y < 0.0f) {
+            rainbowRect.directionModifier.y = 1.0f;
+        }
+    }
+}
+
+void drawBackground(HDC hdc, PAINTSTRUCT ps) {
+    HBRUSH backgroundBrush = CreateSolidBrush(BACKGROUND_COLOR);
+    FillRect(hdc, &ps.rcPaint, backgroundBrush);
+}
+
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     switch (uMsg) {
-        case WM_DESTROY: {
-            PostQuitMessage(0);
-            break;
-        }
         case WM_PAINT: {
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hwnd, &ps);
@@ -112,52 +145,27 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
             SelectObject(hdc, GetStockObject(DC_PEN));
             SelectObject(hdc, GetStockObject(DC_BRUSH));
 
-            HBRUSH backgroundBrush = CreateSolidBrush(BACKGROUND_COLOR);
-            FillRect(hdc, &ps.rcPaint, backgroundBrush);
-
+            drawBackground(hdc, ps);
             drawRainbowRect(hdc);
 
             EndPaint(hwnd, &ps);
+            break;
+        }
+
+        case WM_TIMER: {
+            updateRainbowRect(hwnd);
+
+            InvalidateRect(hwnd, nullptr, false);
+            break;
+        }
+        case WM_DESTROY: {
+            PostQuitMessage(0);
             break;
         }
         case WM_GETMINMAXINFO: {
             LPMINMAXINFO lpMMI = (LPMINMAXINFO) lParam;
             lpMMI->ptMinTrackSize.x = MIN_WINDOW_SIZE.cx;
             lpMMI->ptMinTrackSize.y = MIN_WINDOW_SIZE.cy;
-            break;
-        }
-        case WM_TIMER: {
-            rainbowRect.position.x = rainbowRect.position.x + MOVEMENT_PER_FRAME.x * rainbowRect.directionModifier.x;
-            rainbowRect.position.y = rainbowRect.position.y + MOVEMENT_PER_FRAME.y * rainbowRect.directionModifier.y;
-
-            rainbowRect.colorFlow.getNextColor(); // Generates new color
-
-            RECT clientRect;
-            GetClientRect(hwnd, &clientRect);
-            if (rainbowRect.position.x + MOVING_RECT_SIZE.cx > clientRect.right) {
-                rainbowRect.position.x = clientRect.right - MOVING_RECT_SIZE.cx;
-                if (rainbowRect.directionModifier.x > 0.0f) {
-                    rainbowRect.directionModifier.x = -1.0f;
-                }
-            } else if (rainbowRect.position.x < clientRect.left) {
-                rainbowRect.position.x = clientRect.left;
-                if (rainbowRect.directionModifier.x < 0.0f) {
-                    rainbowRect.directionModifier.x = 1.0f;
-                }
-            }
-            if (rainbowRect.position.y + MOVING_RECT_SIZE.cy > clientRect.bottom) {
-                rainbowRect.position.y = clientRect.bottom - MOVING_RECT_SIZE.cy;
-                if (rainbowRect.directionModifier.y > 0.0f) {
-                    rainbowRect.directionModifier.y = -1.0f;
-                }
-            } else if (rainbowRect.position.y < clientRect.top) {
-                rainbowRect.position.y = clientRect.top;
-                if (rainbowRect.directionModifier.y < 0.0f) {
-                    rainbowRect.directionModifier.y = 1.0f;
-                }
-            }
-
-            InvalidateRect(hwnd, nullptr, false);
             break;
         }
         default: {
