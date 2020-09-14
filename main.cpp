@@ -6,6 +6,7 @@
 #endif
 
 #include <iostream>
+#include <cmath>
 #include <windows.h>
 
 
@@ -120,16 +121,29 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
             movingRectPosition.x = movingRectPosition.x + MOVEMENT_PER_FRAME.x * movementDirectionModifier.x;
             movingRectPosition.y = movingRectPosition.y + MOVEMENT_PER_FRAME.y * movementDirectionModifier.y;
 
-            RECT rect;
-            GetClientRect(hwnd, &rect);
-            if ((movingRectPosition.x + MOVING_RECT_SIZE.cx > rect.right && movementDirectionModifier.x > 0.0f) ||
-                    (movingRectPosition.x < rect.left && movementDirectionModifier.x < 0.0f)) {
-                movementDirectionModifier.x *= -1.0f;
+            RECT clientRect;
+            GetClientRect(hwnd, &clientRect);
+            if (movingRectPosition.x + MOVING_RECT_SIZE.cx > clientRect.right) {
+                movingRectPosition.x = clientRect.right - MOVING_RECT_SIZE.cx;
+                if (movementDirectionModifier.x > 0.0f) {
+                    movementDirectionModifier.x = -1.0f;
+                }
+            } else if (movingRectPosition.x < clientRect.left) {
+                movingRectPosition.x = clientRect.left;
+                if (movementDirectionModifier.x < 0.0f) {
+                    movementDirectionModifier.x = 1.0f;
+                }
             }
-
-            if ((movingRectPosition.y + MOVING_RECT_SIZE.cx > rect.bottom && movementDirectionModifier.y > 0.0f) ||
-                (movingRectPosition.y < rect.top && movementDirectionModifier.y < 0.0f)) {
-                movementDirectionModifier.y *= -1.0f;
+            if (movingRectPosition.y + MOVING_RECT_SIZE.cy > clientRect.bottom) {
+                movingRectPosition.y = clientRect.bottom - MOVING_RECT_SIZE.cy;
+                if (movementDirectionModifier.y > 0.0f) {
+                    movementDirectionModifier.y = -1.0f;
+                }
+            } else if (movingRectPosition.y < clientRect.top) {
+                movingRectPosition.y = clientRect.top;
+                if (movementDirectionModifier.y < 0.0f) {
+                    movementDirectionModifier.y = 1.0f;
+                }
             }
 
             InvalidateRect(hwnd, nullptr, false);
