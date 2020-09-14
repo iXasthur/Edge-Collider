@@ -9,14 +9,20 @@
 #include <windows.h>
 
 
-const SIZE MIN_WINDOW_SIZE = SIZE {400, 300};
-const SIZE FIRST_WINDOW_SIZE = SIZE {800, 600};
+const unsigned int FPS = 60;
+const unsigned int MOVEMENT_TIMER_ID = 1;
+const unsigned int MOVEMENT_UPDATE_DELAY = 1000/FPS;
+const POINTFLOAT MOVEMENT_PER_FRAME = POINTFLOAT {200.0f/FPS, 100.0f/FPS};
+
+const SIZE MIN_WINDOW_SIZE = SIZE {200, 150};
+const SIZE FIRST_WINDOW_SIZE = SIZE {400, 300};
 const SIZE MOVING_RECT_SIZE = SIZE {50, 50};
 
 const COLORREF BACKGROUND_COLOR = RGB(26, 26, 26);
 const COLORREF MOVING_RECT_COLOR = RGB(241, 196, 15);
 
-static POINT movingRectPosition = POINT {25, 25};
+static POINTFLOAT movingRectPosition = POINTFLOAT {25.0f, 25.0f};
+static POINTFLOAT movementDirectionModifier = POINTFLOAT {1.0f, 1.0f};
 
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -61,6 +67,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR pCmdLine, int nCmdShow
         return 0;
     }
 
+    SetTimer(hwnd, MOVEMENT_TIMER_ID, MOVEMENT_UPDATE_DELAY, nullptr);
     ShowWindow(hwnd, nCmdShow);
 
     MSG msg = {};
@@ -81,9 +88,6 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
         case WM_PAINT: {
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hwnd, &ps);
-
-            RECT rect;
-            GetClientRect(hwnd, &rect);
 
             HBRUSH backgroundBrush = CreateSolidBrush(BACKGROUND_COLOR);
             FillRect(hdc, &ps.rcPaint, backgroundBrush);
@@ -110,6 +114,25 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
             LPMINMAXINFO lpMMI = (LPMINMAXINFO) lParam;
             lpMMI->ptMinTrackSize.x = MIN_WINDOW_SIZE.cx;
             lpMMI->ptMinTrackSize.y = MIN_WINDOW_SIZE.cy;
+            break;
+        }
+        case WM_TIMER: {
+            movingRectPosition.x = movingRectPosition.x + MOVEMENT_PER_FRAME.x * movementDirectionModifier.x;
+            movingRectPosition.y = movingRectPosition.y + MOVEMENT_PER_FRAME.y * movementDirectionModifier.y;
+
+            RECT rect;
+            GetClientRect(hwnd, &rect);
+            if ((movingRectPosition.x + MOVING_RECT_SIZE.cx > rect.right && movementDirectionModifier.x > 0.0f) ||
+                    (movingRectPosition.x < rect.left && movementDirectionModifier.x < 0.0f)) {
+                movementDirectionModifier.x *= -1.0f;
+            }
+
+            if ((movingRectPosition.y + MOVING_RECT_SIZE.cx > rect.bottom && movementDirectionModifier.y > 0.0f) ||
+                (movingRectPosition.y < rect.top && movementDirectionModifier.y < 0.0f)) {
+                movementDirectionModifier.y *= -1.0f;
+            }
+
+            InvalidateRect(hwnd, nullptr, false);
             break;
         }
         default: {
