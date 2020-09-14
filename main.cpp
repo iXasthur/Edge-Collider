@@ -8,68 +8,7 @@
 #include <iostream>
 #include <cmath>
 #include <windows.h>
-
-
-struct ColorFlow {
-
-    int rModifier = 1;
-    int gModifier = 1;
-    int bModifier = 1;
-
-    int r;
-    int g;
-    int b;
-
-    explicit ColorFlow(COLORREF colorRef) {
-        r = GetRValue(colorRef);
-        g = GetGValue(colorRef);
-        b = GetBValue(colorRef);
-    }
-
-    ColorFlow(int r, int g, int b) {
-        this->r = r;
-        this->g = g;
-        this->b = b;
-    }
-
-    void createNextColor() {
-        r += rModifier;
-        if (r >= 255) {
-            r = 255;
-            rModifier = -1;
-        } else if (r <= 0) {
-            r = 0;
-            rModifier = 1;
-        }
-
-        g += gModifier;
-        if (g >= 255) {
-            g = 255;
-            gModifier = -1;
-        } else if (g <= 0) {
-            g = 0;
-            gModifier = 1;
-        }
-
-        b += bModifier;
-        if (b >= 255) {
-            b = 255;
-            bModifier = -1;
-        } else if (b <= 0) {
-            b = 0;
-            bModifier = 1;
-        }
-    }
-
-    COLORREF getCurrentColor() {
-        return RGB(r, g, b);
-    }
-
-    COLORREF getNextColor() {
-        createNextColor();
-        return RGB(r, g, b);
-    }
-};
+#include "ColorFlow/ColorFlow.h"
 
 const unsigned int FPS = 120;
 const unsigned int MOVEMENT_TIMER_ID = 1;
