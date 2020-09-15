@@ -45,6 +45,8 @@ void initMovingObjects() {
     rainbowRect = RainbowRect(ColorFlow(RAINBOW_RECT_DEFAULT_COLOR), RAINBOW_RECT_DEFAULT_POSITION, RAINBOW_RECT_DEFAULT_SIZE);
     rainbowRect.colorFlow.speed = 2;
 
+    selectedObject = &rainbowRect;
+
     Gdiplus::Image image = Gdiplus::Image(SPRITE_IMAGE_NAME);
     spriteNode = SpriteNode(RAINBOW_RECT_DEFAULT_POSITION, RAINBOW_RECT_DEFAULT_SIZE, image.Clone());
     if (image.GetLastStatus() != Gdiplus::Ok) {
@@ -256,6 +258,34 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
                             runSpriteNodeAnimation = true;
                         }
                     }
+                    break;
+                }
+                case VK_LEFT: {
+                    runRainbowRectAnimation = false;
+                    runSpriteNodeAnimation = false;
+                    selectedObject->position.x -= selectedObject->size.cx / 2.0f;
+                    fixMovingObjectBorderPosition(hwnd, selectedObject);
+                    break;
+                }
+                case VK_RIGHT: {
+                    runRainbowRectAnimation = false;
+                    runSpriteNodeAnimation = false;
+                    selectedObject->position.x += selectedObject->size.cx / 2.0f;
+                    fixMovingObjectBorderPosition(hwnd, selectedObject);
+                    break;
+                }
+                case VK_UP: {
+                    runRainbowRectAnimation = false;
+                    runSpriteNodeAnimation = false;
+                    selectedObject->position.y -= selectedObject->size.cy / 2.0f;
+                    fixMovingObjectBorderPosition(hwnd, selectedObject);
+                    break;
+                }
+                case VK_DOWN: {
+                    runRainbowRectAnimation = false;
+                    runSpriteNodeAnimation = false;
+                    selectedObject->position.y += selectedObject->size.cy / 2.0f;
+                    fixMovingObjectBorderPosition(hwnd, selectedObject);
                     break;
                 }
             }
