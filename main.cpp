@@ -15,15 +15,15 @@
 
 const unsigned int FPS = 60;
 const unsigned int MOVEMENT_TIMER_ID = 1;
-const unsigned int MOVEMENT_UPDATE_DELAY = 1000/FPS;
-const POINTFLOAT MOVEMENT_PER_FRAME = POINTFLOAT {200.0f/FPS, 100.0f/FPS};
+const unsigned int MOVEMENT_UPDATE_DELAY = 1000 / FPS;
+const POINTFLOAT MOVEMENT_PER_FRAME = POINTFLOAT{200.0f / FPS, 100.0f / FPS};
 
-const SIZE MIN_WINDOW_SIZE = SIZE {200, 150};
-const SIZE FIRST_WINDOW_SIZE = SIZE {400, 300};
+const SIZE MIN_WINDOW_SIZE = SIZE{200, 150};
+const SIZE FIRST_WINDOW_SIZE = SIZE{400, 300};
 const COLORREF BACKGROUND_COLOR = RGB(26, 26, 26);
 
-const SIZE RAINBOW_RECT_DEFAULT_SIZE = SIZE {40, 40};
-const POINTFLOAT RAINBOW_RECT_DEFAULT_POSITION = POINTFLOAT {25.0f, 25.0f};
+const SIZE RAINBOW_RECT_DEFAULT_SIZE = SIZE{40, 40};
+const POINTFLOAT RAINBOW_RECT_DEFAULT_POSITION = POINTFLOAT{25.0f, 25.0f};
 const COLORREF RAINBOW_RECT_DEFAULT_COLOR = RGB(241, 196, 15);
 
 const wchar_t SPRITE_IMAGE_PATH[] = L"sprite.png";
@@ -42,17 +42,28 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 
 void initMovingObjects() {
-    rainbowRect = RainbowRect(ColorFlow(RAINBOW_RECT_DEFAULT_COLOR), RAINBOW_RECT_DEFAULT_POSITION, RAINBOW_RECT_DEFAULT_SIZE);
+    rainbowRect = RainbowRect(ColorFlow(RAINBOW_RECT_DEFAULT_COLOR), RAINBOW_RECT_DEFAULT_POSITION,
+                              RAINBOW_RECT_DEFAULT_SIZE);
     rainbowRect.colorFlow.speed = 2;
 
     selectedObject = &rainbowRect;
 
     Gdiplus::Image image = Gdiplus::Image(SPRITE_IMAGE_PATH);
-    spriteNode = SpriteNode(RAINBOW_RECT_DEFAULT_POSITION, RAINBOW_RECT_DEFAULT_SIZE, image.Clone());
     if (image.GetLastStatus() != Gdiplus::Ok) {
-        MessageBoxW(nullptr, L"Error opening image", L"Attention", MB_OK);
+        MessageBoxW(nullptr, L"Error opening sprite", L"Attention", MB_OK);
         std::exit(0);
     }
+
+    SIZE spriteNodeSize = RAINBOW_RECT_DEFAULT_SIZE;
+    unsigned int imageWidth = image.GetWidth();
+    unsigned int imageHeight = image.GetHeight();
+    if (imageWidth == 0 || imageHeight == 0) {
+        MessageBoxW(nullptr, L"Invalid sprite", L"Attention", MB_OK);
+        std::exit(0);
+    }
+    float ratio = (float)imageWidth / (float)imageHeight;
+    spriteNodeSize.cx = spriteNodeSize.cx * ratio;
+    spriteNode = SpriteNode(RAINBOW_RECT_DEFAULT_POSITION, spriteNodeSize, image.Clone());
 
     spriteNode.isHidden = true;
     runSpriteNodeAnimation = false;
