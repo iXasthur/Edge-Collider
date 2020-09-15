@@ -48,7 +48,7 @@ void initMovingObjects() {
     Gdiplus::Image image = Gdiplus::Image(SPRITE_IMAGE_NAME);
     spriteNode = SpriteNode(RAINBOW_RECT_DEFAULT_POSITION, RAINBOW_RECT_DEFAULT_SIZE, image.Clone());
     if (image.GetLastStatus() != Gdiplus::Ok) {
-        MessageBoxW(nullptr, L"Error opening image!", L"Attention", MB_OK);
+        MessageBoxW(nullptr, L"Error opening image", L"Attention", MB_OK);
         std::exit(0);
     }
 
@@ -97,7 +97,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR pCmdLine, int nCmdShow
     );
 
     if (hwnd == nullptr) {
-        MessageBoxW(nullptr, L"Error creating window!", L"Attention", MB_OK);
+        MessageBoxW(nullptr, L"Error creating window", L"Attention", MB_OK);
         return 0;
     }
 
