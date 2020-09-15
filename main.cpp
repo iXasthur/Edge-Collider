@@ -172,12 +172,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
             HBITMAP oldBmp = (HBITMAP) SelectObject(memDC, bmp);
 
             drawBackground(memDC, ps);
-            if (!rainbowRect.isHidden) {
-                rainbowRect.draw(memDC);
-            }
-            if (!spriteNode.isHidden) {
-                spriteNode.draw(memDC);
-            }
+            selectedObject->draw(memDC);
 
             BitBlt(hdc, 0, 0, rcClientRect.right - rcClientRect.left, rcClientRect.bottom - rcClientRect.top, memDC, 0,
                    0, SRCCOPY);
