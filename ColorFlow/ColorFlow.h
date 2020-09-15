@@ -20,6 +20,8 @@ public:
     int g = 255;
     int b = 255;
 
+    int speed = 1;
+
     ColorFlow() = default;
 
     explicit ColorFlow(COLORREF colorRef) noexcept {

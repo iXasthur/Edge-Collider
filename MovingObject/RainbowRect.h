@@ -5,21 +5,18 @@
 #ifndef EDGE_COLLIDER_RAINBOWRECT_H
 #define EDGE_COLLIDER_RAINBOWRECT_H
 
+#include "MovingObject.h"
 #include "../ColorFlow/ColorFlow.h"
 
-class RainbowRect {
+class RainbowRect: public MovingObject {
 public:
-    POINTFLOAT position = POINTFLOAT {0, 0};
-    POINTFLOAT directionModifier = POINTFLOAT {1.0f, 1.0f};
-
     ColorFlow colorFlow = ColorFlow();
-
-    bool isHidden = false;
 
     RainbowRect() = default;
 
-    RainbowRect(ColorFlow colorFlow, POINTFLOAT position) noexcept {
+    RainbowRect(ColorFlow colorFlow, POINTFLOAT position, SIZE size) noexcept {
         this->position = position;
+        this->size = size;
         this->colorFlow = colorFlow;
     }
 };

@@ -5,7 +5,7 @@
 #include "ColorFlow.h"
 
 void ColorFlow::generateNextColor() {
-    r += rModifier;
+    r += rModifier * speed;
     if (r >= 255) {
         r = 255;
         rModifier = -1;
@@ -14,7 +14,7 @@ void ColorFlow::generateNextColor() {
         rModifier = 1;
     }
 
-    g += gModifier;
+    g += gModifier * speed;
     if (g >= 255) {
         g = 255;
         gModifier = -1;
@@ -23,7 +23,7 @@ void ColorFlow::generateNextColor() {
         gModifier = 1;
     }
 
-    b += bModifier;
+    b += bModifier * speed;
     if (b >= 255) {
         b = 255;
         bModifier = -1;

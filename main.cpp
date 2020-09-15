@@ -7,11 +7,13 @@
 
 #include <iostream>
 #include <windows.h>
+#include <gdiplus.h>
 #include "ColorFlow/ColorFlow.h"
 #include "MovingObject/RainbowRect.h"
+#include "MovingObject/SpriteNode.h"
 
 
-const unsigned int FPS = 120;
+const unsigned int FPS = 60;
 const unsigned int MOVEMENT_TIMER_ID = 1;
 const unsigned int MOVEMENT_UPDATE_DELAY = 1000/FPS;
 const POINTFLOAT MOVEMENT_PER_FRAME = POINTFLOAT {200.0f/FPS, 100.0f/FPS};
@@ -20,19 +22,47 @@ const SIZE MIN_WINDOW_SIZE = SIZE {200, 150};
 const SIZE FIRST_WINDOW_SIZE = SIZE {400, 300};
 const COLORREF BACKGROUND_COLOR = RGB(26, 26, 26);
 
-const SIZE RAINBOW_RECT_SIZE = SIZE {40, 40};
+const SIZE RAINBOW_RECT_DEFAULT_SIZE = SIZE {40, 40};
 const POINTFLOAT RAINBOW_RECT_DEFAULT_POSITION = POINTFLOAT {25.0f, 25.0f};
 const COLORREF RAINBOW_RECT_DEFAULT_COLOR = RGB(241, 196, 15);
 
+const wchar_t SPRITE_IMAGE_NAME[] = L"D:\\Developer\\Edge-Collider\\apple.png";
 
-bool runRainbowRectAnimation = false;
-RainbowRect rainbowRect = RainbowRect(ColorFlow(RAINBOW_RECT_DEFAULT_COLOR), RAINBOW_RECT_DEFAULT_POSITION);
+
+static bool runRainbowRectAnimation = true;
+static RainbowRect rainbowRect = RainbowRect();
+
+static bool runSpriteNodeAnimation = true;
+static SpriteNode spriteNode = SpriteNode();
+
+static MovingObject *selectedObject = nullptr;
 
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 
+void initMovingObjects() {
+    rainbowRect = RainbowRect(ColorFlow(RAINBOW_RECT_DEFAULT_COLOR), RAINBOW_RECT_DEFAULT_POSITION, RAINBOW_RECT_DEFAULT_SIZE);
+    rainbowRect.colorFlow.speed = 4;
+
+    Gdiplus::Image image = Gdiplus::Image(SPRITE_IMAGE_NAME);
+    spriteNode = SpriteNode(RAINBOW_RECT_DEFAULT_POSITION, RAINBOW_RECT_DEFAULT_SIZE, image.Clone());
+    if (image.GetLastStatus() != Gdiplus::Ok) {
+        MessageBoxW(nullptr, L"Error opening image!", L"Attention", MB_OK);
+        std::exit(0);
+    }
+
+    spriteNode.isHidden = true;
+    runSpriteNodeAnimation = false;
+}
+
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR pCmdLine, int nCmdShow) {
+
+    Gdiplus::GdiplusStartupInput gdiplusStartupInput;
+    ULONG_PTR gdiplusToken;
+    Gdiplus::GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, nullptr);
+
+    initMovingObjects();
 
     const wchar_t WINDOW_CLASS[] = L"MAIN_WINDOW_CLASS";
     const wchar_t WINDOW_TITLE[] = L"Edge collider ^_^";
@@ -46,7 +76,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR pCmdLine, int nCmdShow
     wc.hInstance = hInstance;
     wc.hIcon = LoadIconW(nullptr, IDI_APPLICATION);
     wc.hCursor = LoadCursorW(nullptr, IDC_ARROW);
-    wc.hbrBackground = (HBRUSH) GetStockObject(WHITE_BRUSH);
+    wc.hbrBackground = CreateSolidBrush(BACKGROUND_COLOR);
     wc.lpszMenuName = nullptr;
     wc.lpszClassName = WINDOW_CLASS;
     wc.hIconSm = LoadIconW(nullptr, IDI_APPLICATION);
@@ -94,8 +124,8 @@ void drawRainbowRect(HDC hdc) {
     RECT movingRect;
     movingRect.left = rainbowRect.position.x;
     movingRect.top = rainbowRect.position.y;
-    movingRect.right = RAINBOW_RECT_SIZE.cx + rainbowRect.position.x;
-    movingRect.bottom = RAINBOW_RECT_SIZE.cy + rainbowRect.position.y;
+    movingRect.right = rainbowRect.size.cx + rainbowRect.position.x;
+    movingRect.bottom = rainbowRect.size.cy + rainbowRect.position.y;
 
     Rectangle(hdc, movingRect.left, movingRect.top, movingRect.right, movingRect.bottom);
 
@@ -103,40 +133,38 @@ void drawRainbowRect(HDC hdc) {
     SetDCBrushColor(hdc, initialDCBrushColor);
 }
 
-void fixRainbowRectBorderPosition(HWND hwnd) {
+void fixMovingObjectBorderPosition(HWND hwnd, MovingObject *obj) {
     RECT clientRect;
     GetClientRect(hwnd, &clientRect);
-    if (rainbowRect.position.x + RAINBOW_RECT_SIZE.cx > clientRect.right) {
-        rainbowRect.position.x = clientRect.right - RAINBOW_RECT_SIZE.cx;
-        if (rainbowRect.directionModifier.x > 0.0f) {
-            rainbowRect.directionModifier.x = -1.0f;
+    if (obj->position.x + obj->size.cx > clientRect.right) {
+        obj->position.x = clientRect.right - obj->size.cx;
+        if (obj->directionModifier.x > 0.0f) {
+            obj->directionModifier.x = -1.0f;
         }
-    } else if (rainbowRect.position.x < clientRect.left) {
-        rainbowRect.position.x = clientRect.left;
-        if (rainbowRect.directionModifier.x < 0.0f) {
-            rainbowRect.directionModifier.x = 1.0f;
+    } else if (obj->position.x < clientRect.left) {
+        obj->position.x = clientRect.left;
+        if (obj->directionModifier.x < 0.0f) {
+            obj->directionModifier.x = 1.0f;
         }
     }
-    if (rainbowRect.position.y + RAINBOW_RECT_SIZE.cy > clientRect.bottom) {
-        rainbowRect.position.y = clientRect.bottom - RAINBOW_RECT_SIZE.cy;
-        if (rainbowRect.directionModifier.y > 0.0f) {
-            rainbowRect.directionModifier.y = -1.0f;
+    if (obj->position.y + obj->size.cy > clientRect.bottom) {
+        obj->position.y = clientRect.bottom - obj->size.cy;
+        if (obj->directionModifier.y > 0.0f) {
+            obj->directionModifier.y = -1.0f;
         }
-    } else if (rainbowRect.position.y < clientRect.top) {
-        rainbowRect.position.y = clientRect.top;
-        if (rainbowRect.directionModifier.y < 0.0f) {
-            rainbowRect.directionModifier.y = 1.0f;
+    } else if (obj->position.y < clientRect.top) {
+        obj->position.y = clientRect.top;
+        if (obj->directionModifier.y < 0.0f) {
+            obj->directionModifier.y = 1.0f;
         }
     }
 }
 
-void updateRainbowRect(HWND hwnd) {
-    rainbowRect.position.x = rainbowRect.position.x + MOVEMENT_PER_FRAME.x * rainbowRect.directionModifier.x;
-    rainbowRect.position.y = rainbowRect.position.y + MOVEMENT_PER_FRAME.y * rainbowRect.directionModifier.y;
+void updateMovingObject(HWND hwnd, MovingObject *obj) {
+    obj->position.x = obj->position.x + MOVEMENT_PER_FRAME.x * obj->directionModifier.x;
+    obj->position.y = obj->position.y + MOVEMENT_PER_FRAME.y * obj->directionModifier.y;
 
-    rainbowRect.colorFlow.getNextColor(); // Generates new color
-
-    fixRainbowRectBorderPosition(hwnd);
+    fixMovingObjectBorderPosition(hwnd, obj);
 }
 
 void drawBackground(HDC hdc, PAINTSTRUCT ps) {
@@ -153,36 +181,25 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
             SelectObject(hdc, GetStockObject(DC_PEN));
             SelectObject(hdc, GetStockObject(DC_BRUSH));
 
-            drawBackground(hdc, ps);
             if (!rainbowRect.isHidden) {
                 drawRainbowRect(hdc);
             }
-
-
-//            Gdiplus::Graphics graphics = Gdiplus::Graphics(hdc);
-
-//            // Create an Image object.
-//            Gdiplus::Image image(L"apple.png");
-//            // Create a Pen object.
-//            Gdiplus::Pen pen (Gdiplus::Color(255, 255, 0, 0), 2);
-//            // Draw the original source image.
-//            graphics.DrawImage(&image, 10, 10);
-//            // Create a Rect object that specifies the destination of the image.
-//            Gdiplus::Rect destRect(50, 50, 50, 50);
-//            // Draw the rectangle that bounds the image.
-//            graphics.DrawRectangle(&pen, destRect);
-//            // Draw the image.
-//            graphics.DrawImage(&image, destRect);
+            if (!spriteNode.isHidden) {
+                Gdiplus::Graphics(hdc).DrawImage(spriteNode.image, spriteNode.getDrawRect());
+            }
 
             EndPaint(hwnd, &ps);
             break;
         }
         case WM_TIMER: {
             if (runRainbowRectAnimation) {
-                updateRainbowRect(hwnd);
+                rainbowRect.colorFlow.getNextColor(); // Generates new color
+                updateMovingObject(hwnd, &rainbowRect);
             }
-
-            InvalidateRect(hwnd, nullptr, false);
+            if (runSpriteNodeAnimation) {
+                updateMovingObject(hwnd, &spriteNode);
+            }
+            InvalidateRect(hwnd, nullptr, true);
             break;
         }
         case WM_DESTROY: {
@@ -192,16 +209,29 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
         case WM_KEYDOWN: {
             switch (wParam) {
                 case VK_F1: {
-                    rainbowRect = RainbowRect(ColorFlow(RAINBOW_RECT_DEFAULT_COLOR), RAINBOW_RECT_DEFAULT_POSITION);
+                    spriteNode.isHidden = true;
+                    runSpriteNodeAnimation = false;
+
+                    rainbowRect.isHidden = false;
                     runRainbowRectAnimation = true;
+
+                    selectedObject = &rainbowRect;
+                    selectedObject->position = RAINBOW_RECT_DEFAULT_POSITION;
+                    selectedObject->directionModifier = POINTFLOAT {1.0f, 1.0f};
                     break;
                 }
                 case 0x31: { // 1 key
-                    if (!rainbowRect.isHidden && runRainbowRectAnimation) {
-                        runRainbowRectAnimation = false;
-                    } else {
-                        rainbowRect.isHidden = false;
-                        runRainbowRectAnimation = true;
+                    if (selectedObject == &rainbowRect) {
+                        spriteNode.isHidden = true;
+                        runSpriteNodeAnimation = false;
+
+                        selectedObject = &rainbowRect;
+                        if (!rainbowRect.isHidden && runRainbowRectAnimation) {
+                            runRainbowRectAnimation = false;
+                        } else {
+                            rainbowRect.isHidden = false;
+                            runRainbowRectAnimation = true;
+                        }
                     }
                     break;
                 }
@@ -209,11 +239,27 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
                     rainbowRect.isHidden = true;
                     runRainbowRectAnimation = false;
 
+                    spriteNode.isHidden = false;
+                    runSpriteNodeAnimation = true;
+
+                    selectedObject = &spriteNode;
+                    selectedObject->position = RAINBOW_RECT_DEFAULT_POSITION;
+                    selectedObject->directionModifier = POINTFLOAT {1.0f, 1.0f};
                     break;
                 }
                 case 0x32: { // 2 key
-                    rainbowRect.isHidden = true;
-                    runRainbowRectAnimation = false;
+                    if (selectedObject == &spriteNode) {
+                        rainbowRect.isHidden = true;
+                        runRainbowRectAnimation = false;
+
+                        selectedObject = &spriteNode;
+                        if (!spriteNode.isHidden && runSpriteNodeAnimation) {
+                            runSpriteNodeAnimation = false;
+                        } else {
+                            spriteNode.isHidden = false;
+                            runSpriteNodeAnimation = true;
+                        }
+                    }
                     break;
                 }
             }
@@ -221,25 +267,26 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
         }
         case WM_MOUSEWHEEL: {
             runRainbowRectAnimation = false;
+            runSpriteNodeAnimation = false;
 
             int fwKeys = GET_KEYSTATE_WPARAM(wParam);
             int zDelta = GET_WHEEL_DELTA_WPARAM(wParam);
 
             if (fwKeys == MK_SHIFT) {
                 if (zDelta > 0) {
-                    rainbowRect.position.x += RAINBOW_RECT_SIZE.cx / 4.0f;
+                    selectedObject->position.x += selectedObject->size.cx / 4.0f;
                 } else {
-                    rainbowRect.position.x -= RAINBOW_RECT_SIZE.cx / 4.0f;
+                    selectedObject->position.x -= selectedObject->size.cx / 4.0f;
                 }
             } else {
                 if (zDelta > 0) {
-                    rainbowRect.position.y -= RAINBOW_RECT_SIZE.cy / 4.0f;
+                    selectedObject->position.y -= selectedObject->size.cy / 4.0f;
                 } else {
-                    rainbowRect.position.y += RAINBOW_RECT_SIZE.cy / 4.0f;
+                    selectedObject->position.y += selectedObject->size.cy / 4.0f;
                 }
             }
 
-            fixRainbowRectBorderPosition(hwnd);
+            fixMovingObjectBorderPosition(hwnd, selectedObject);
             break;
         }
         case WM_GETMINMAXINFO: {
