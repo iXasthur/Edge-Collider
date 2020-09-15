@@ -13,7 +13,7 @@
 #include "MovingObject/SpriteNode.h"
 
 
-const unsigned int FPS = 60;
+const unsigned int FPS = 120;
 const unsigned int MOVEMENT_TIMER_ID = 1;
 const unsigned int MOVEMENT_UPDATE_DELAY = 1000/FPS;
 const POINTFLOAT MOVEMENT_PER_FRAME = POINTFLOAT {200.0f/FPS, 100.0f/FPS};
@@ -43,7 +43,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 void initMovingObjects() {
     rainbowRect = RainbowRect(ColorFlow(RAINBOW_RECT_DEFAULT_COLOR), RAINBOW_RECT_DEFAULT_POSITION, RAINBOW_RECT_DEFAULT_SIZE);
-    rainbowRect.colorFlow.speed = 4;
+    rainbowRect.colorFlow.speed = 2;
 
     Gdiplus::Image image = Gdiplus::Image(SPRITE_IMAGE_NAME);
     spriteNode = SpriteNode(RAINBOW_RECT_DEFAULT_POSITION, RAINBOW_RECT_DEFAULT_SIZE, image.Clone());
@@ -155,18 +155,34 @@ void drawBackground(HDC hdc, PAINTSTRUCT ps) {
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     switch (uMsg) {
         case WM_PAINT: {
+            RECT rcClientRect;
+            GetClientRect(hwnd, &rcClientRect);
+
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hwnd, &ps);
+            HDC memDC = CreateCompatibleDC(hdc);
 
-            SelectObject(hdc, GetStockObject(DC_PEN));
-            SelectObject(hdc, GetStockObject(DC_BRUSH));
+            SelectObject(memDC, GetStockObject(DC_PEN));
+            SelectObject(memDC, GetStockObject(DC_BRUSH));
 
+            HBITMAP bmp = CreateCompatibleBitmap(hdc, rcClientRect.right - rcClientRect.left,
+                                                 rcClientRect.bottom - rcClientRect.top);
+            HBITMAP oldBmp = (HBITMAP) SelectObject(memDC, bmp);
+
+            drawBackground(memDC, ps);
             if (!rainbowRect.isHidden) {
-                rainbowRect.draw(hdc);
+                rainbowRect.draw(memDC);
             }
             if (!spriteNode.isHidden) {
-                spriteNode.draw(hdc);
+                spriteNode.draw(memDC);
             }
+
+            BitBlt(hdc, 0, 0, rcClientRect.right - rcClientRect.left, rcClientRect.bottom - rcClientRect.top, memDC, 0,
+                   0, SRCCOPY);
+
+            SelectObject(memDC, oldBmp);
+            DeleteObject(bmp);
+            DeleteDC(memDC);
 
             EndPaint(hwnd, &ps);
             break;
@@ -179,7 +195,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
             if (runSpriteNodeAnimation) {
                 updateMovingObject(hwnd, &spriteNode);
             }
-            InvalidateRect(hwnd, nullptr, true);
+            InvalidateRect(hwnd, nullptr, false);
             break;
         }
         case WM_DESTROY: {
