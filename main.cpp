@@ -26,7 +26,7 @@ const SIZE RAINBOW_RECT_DEFAULT_SIZE = SIZE {40, 40};
 const POINTFLOAT RAINBOW_RECT_DEFAULT_POSITION = POINTFLOAT {25.0f, 25.0f};
 const COLORREF RAINBOW_RECT_DEFAULT_COLOR = RGB(241, 196, 15);
 
-const wchar_t SPRITE_IMAGE_NAME[] = L"D:\\Developer\\Edge-Collider\\apple.png";
+const wchar_t SPRITE_IMAGE_PATH[] = L"D:\\Developer\\Edge-Collider\\apple.png";
 
 
 static bool runRainbowRectAnimation = true;
@@ -47,7 +47,7 @@ void initMovingObjects() {
 
     selectedObject = &rainbowRect;
 
-    Gdiplus::Image image = Gdiplus::Image(SPRITE_IMAGE_NAME);
+    Gdiplus::Image image = Gdiplus::Image(SPRITE_IMAGE_PATH);
     spriteNode = SpriteNode(RAINBOW_RECT_DEFAULT_POSITION, RAINBOW_RECT_DEFAULT_SIZE, image.Clone());
     if (image.GetLastStatus() != Gdiplus::Ok) {
         MessageBoxW(nullptr, L"Error opening image", L"Attention", MB_OK);
