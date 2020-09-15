@@ -13,7 +13,7 @@
 #include "MovingObject/SpriteNode.h"
 
 
-const unsigned int FPS = 120;
+const unsigned int FPS = 60;
 const unsigned int MOVEMENT_TIMER_ID = 1;
 const unsigned int MOVEMENT_UPDATE_DELAY = 1000/FPS;
 const POINTFLOAT MOVEMENT_PER_FRAME = POINTFLOAT {200.0f/FPS, 100.0f/FPS};
