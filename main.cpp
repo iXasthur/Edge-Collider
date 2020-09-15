@@ -211,7 +211,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
         }
         case WM_KEYDOWN: {
             switch (wParam) {
-                case 0x31: {
+                case 0x31: { // 1 key
                     spriteNode.isHidden = true;
                     runSpriteNodeAnimation = false;
 
@@ -223,7 +223,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
                     selectedObject->directionModifier = POINTFLOAT {1.0f, 1.0f};
                     break;
                 }
-                case 0x32: {
+                case 0x32: { // 2 key
                     rainbowRect.isHidden = true;
                     runRainbowRectAnimation = false;
 
