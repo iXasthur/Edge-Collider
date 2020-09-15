@@ -86,16 +86,24 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR pCmdLine, int nCmdShow
     RegisterClassExW(&wc);
 
     HWND hwnd = CreateWindowExW(
-            0x0,  // Optional window styles.
-            WINDOW_CLASS,   // Window class
-            WINDOW_TITLE,   // Window text
-            WS_OVERLAPPEDWINDOW,   // Window style
+            // Optional window styles.
+            0x0,
+            // Window class
+            WINDOW_CLASS,
+            // Window text
+            WINDOW_TITLE,
+            // Window style
+            WS_OVERLAPPEDWINDOW,
             // Size and position
             CW_USEDEFAULT, CW_USEDEFAULT, FIRST_WINDOW_SIZE.cx, FIRST_WINDOW_SIZE.cy,
-            nullptr,   // Parent window
-            nullptr,   // Menu
-            hInstance,  // Instance handle
-            nullptr   // Additional application data
+            // Parent window
+            nullptr,
+            // Menu
+            nullptr,
+            // Instance handle
+            hInstance,
+            // Additional application data
+            nullptr
     );
 
     if (hwnd == nullptr) {
@@ -150,8 +158,9 @@ void updateMovingObject(HWND hwnd, MovingObject *obj) {
 }
 
 void drawBackground(HDC hdc, PAINTSTRUCT ps) {
-    HBRUSH backgroundBrush = CreateSolidBrush(BACKGROUND_COLOR);
-    FillRect(hdc, &ps.rcPaint, backgroundBrush);
+    HBRUSH brush = CreateSolidBrush(BACKGROUND_COLOR);
+    FillRect(hdc, &ps.rcPaint, brush);
+    DeleteObject(brush);
 }
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
