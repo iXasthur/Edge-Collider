@@ -120,6 +120,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR pCmdLine, int nCmdShow
         DispatchMessageW(&msg);
     }
 
+    Gdiplus::GdiplusShutdown(gdiplusToken);
     return 0;
 }
 
@@ -210,7 +211,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
         }
         case WM_KEYDOWN: {
             switch (wParam) {
-                case VK_F1: {
+                case 0x31: {
                     spriteNode.isHidden = true;
                     runSpriteNodeAnimation = false;
 
@@ -222,22 +223,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
                     selectedObject->directionModifier = POINTFLOAT {1.0f, 1.0f};
                     break;
                 }
-                case 0x31: { // 1 key
-                    if (selectedObject == &rainbowRect) {
-                        spriteNode.isHidden = true;
-                        runSpriteNodeAnimation = false;
-
-                        selectedObject = &rainbowRect;
-                        if (!rainbowRect.isHidden && runRainbowRectAnimation) {
-                            runRainbowRectAnimation = false;
-                        } else {
-                            rainbowRect.isHidden = false;
-                            runRainbowRectAnimation = true;
-                        }
-                    }
-                    break;
-                }
-                case VK_F2: {
+                case 0x32: {
                     rainbowRect.isHidden = true;
                     runRainbowRectAnimation = false;
 
@@ -249,8 +235,19 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
                     selectedObject->directionModifier = POINTFLOAT {1.0f, 1.0f};
                     break;
                 }
-                case 0x32: { // 2 key
-                    if (selectedObject == &spriteNode) {
+                case VK_SPACE: {
+                    if (selectedObject == &rainbowRect) {
+                        spriteNode.isHidden = true;
+                        runSpriteNodeAnimation = false;
+
+                        selectedObject = &rainbowRect;
+                        if (!rainbowRect.isHidden && runRainbowRectAnimation) {
+                            runRainbowRectAnimation = false;
+                        } else {
+                            rainbowRect.isHidden = false;
+                            runRainbowRectAnimation = true;
+                        }
+                    } else if (selectedObject == &spriteNode) {
                         rainbowRect.isHidden = true;
                         runRainbowRectAnimation = false;
 
