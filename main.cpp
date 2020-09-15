@@ -113,26 +113,6 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR pCmdLine, int nCmdShow
     return 0;
 }
 
-void drawRainbowRect(HDC hdc) {
-    COLORREF initialDCPenColor = GetDCPenColor(hdc);
-    COLORREF initialDCBrushColor = GetDCBrushColor(hdc);
-
-    COLORREF rectColor = rainbowRect.colorFlow.getCurrentColor();
-    SetDCPenColor(hdc, rectColor);
-    SetDCBrushColor(hdc, rectColor);
-
-    RECT movingRect;
-    movingRect.left = rainbowRect.position.x;
-    movingRect.top = rainbowRect.position.y;
-    movingRect.right = rainbowRect.size.cx + rainbowRect.position.x;
-    movingRect.bottom = rainbowRect.size.cy + rainbowRect.position.y;
-
-    Rectangle(hdc, movingRect.left, movingRect.top, movingRect.right, movingRect.bottom);
-
-    SetDCPenColor(hdc, initialDCPenColor);
-    SetDCBrushColor(hdc, initialDCBrushColor);
-}
-
 void fixMovingObjectBorderPosition(HWND hwnd, MovingObject *obj) {
     RECT clientRect;
     GetClientRect(hwnd, &clientRect);
@@ -182,10 +162,10 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
             SelectObject(hdc, GetStockObject(DC_BRUSH));
 
             if (!rainbowRect.isHidden) {
-                drawRainbowRect(hdc);
+                rainbowRect.draw(hdc);
             }
             if (!spriteNode.isHidden) {
-                Gdiplus::Graphics(hdc).DrawImage(spriteNode.image, spriteNode.getDrawRect());
+                spriteNode.draw(hdc);
             }
 
             EndPaint(hwnd, &ps);

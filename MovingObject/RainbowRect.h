@@ -19,6 +19,26 @@ public:
         this->size = size;
         this->colorFlow = colorFlow;
     }
+
+    void draw(HDC hdc) override {
+        COLORREF initialDCPenColor = GetDCPenColor(hdc);
+        COLORREF initialDCBrushColor = GetDCBrushColor(hdc);
+
+        COLORREF rectColor = colorFlow.getCurrentColor();
+        SetDCPenColor(hdc, rectColor);
+        SetDCBrushColor(hdc, rectColor);
+
+        RECT movingRect;
+        movingRect.left = position.x;
+        movingRect.top = position.y;
+        movingRect.right = size.cx + position.x;
+        movingRect.bottom = size.cy + position.y;
+
+        Rectangle(hdc, movingRect.left, movingRect.top, movingRect.right, movingRect.bottom);
+
+        SetDCPenColor(hdc, initialDCPenColor);
+        SetDCBrushColor(hdc, initialDCBrushColor);
+    }
 };
 
 

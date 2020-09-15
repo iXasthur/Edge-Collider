@@ -21,8 +21,8 @@ public:
         this->image = image;
     }
 
-    [[nodiscard]] Gdiplus::Rect getDrawRect() const {
-        return Gdiplus::Rect(position.x, position.y, size.cx, size.cy);
+    void draw(HDC hdc) override {
+        Gdiplus::Graphics(hdc).DrawImage(image, Gdiplus::Rect(position.x, position.y, size.cx, size.cy));
     }
 };
 

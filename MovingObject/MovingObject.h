@@ -9,10 +9,14 @@
 
 class MovingObject {
 public:
-    POINTFLOAT position = POINTFLOAT {0, 0};
-    POINTFLOAT directionModifier = POINTFLOAT {1.0f, 1.0f};
-    SIZE size = SIZE {0, 0};
+    POINTFLOAT position = POINTFLOAT{0, 0};
+    POINTFLOAT directionModifier = POINTFLOAT{1.0f, 1.0f};
+    SIZE size = SIZE{0, 0};
     bool isHidden = false;
+
+    virtual void draw(HDC hdc) {
+
+    }
 };
 
 
