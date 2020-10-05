@@ -8,7 +8,7 @@
 #include "MovingObject.h"
 #include "../ColorFlow/ColorFlow.h"
 
-class RainbowRect: public MovingObject {
+class RainbowRect : public MovingObject {
 public:
     ColorFlow colorFlow = ColorFlow();
 

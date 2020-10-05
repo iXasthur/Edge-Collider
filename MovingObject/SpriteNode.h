@@ -9,7 +9,7 @@
 #include <gdiplus.h>
 #include "MovingObject.h"
 
-class SpriteNode: public MovingObject {
+class SpriteNode : public MovingObject {
 public:
     Gdiplus::Image *image = nullptr;
 

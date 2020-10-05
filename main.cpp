@@ -61,7 +61,7 @@ void initMovingObjects() {
         MessageBoxW(nullptr, L"Invalid sprite", L"Attention", MB_OK);
         std::exit(0);
     }
-    float ratio = (float)imageWidth / (float)imageHeight;
+    float ratio = (float) imageWidth / (float) imageHeight;
     spriteNodeSize.cx = spriteNodeSize.cx * ratio;
     spriteNode = SpriteNode(RAINBOW_RECT_DEFAULT_POSITION, spriteNodeSize, image.Clone());
 
@@ -231,7 +231,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
                     selectedObject = &rainbowRect;
                     selectedObject->position = RAINBOW_RECT_DEFAULT_POSITION;
-                    selectedObject->directionModifier = POINTFLOAT {1.0f, 1.0f};
+                    selectedObject->directionModifier = POINTFLOAT{1.0f, 1.0f};
                     break;
                 }
                 case 0x32: { // 2 key
@@ -243,7 +243,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
                     selectedObject = &spriteNode;
                     selectedObject->position = RAINBOW_RECT_DEFAULT_POSITION;
-                    selectedObject->directionModifier = POINTFLOAT {1.0f, 1.0f};
+                    selectedObject->directionModifier = POINTFLOAT{1.0f, 1.0f};
                     break;
                 }
                 case VK_SPACE: {
