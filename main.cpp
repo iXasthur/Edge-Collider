@@ -44,7 +44,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 void initMovingObjects() {
     rainbowRect = RainbowRect(ColorFlow(RAINBOW_RECT_DEFAULT_COLOR), RAINBOW_RECT_DEFAULT_POSITION,
                               RAINBOW_RECT_DEFAULT_SIZE);
-    rainbowRect.colorFlow.speed = 2;
+    rainbowRect.colorFlow.speed = 8;
 
     selectedObject = &rainbowRect;
 
